@@ -1,0 +1,41 @@
+version: '3.3'
+
+services:
+   authen-svc: 
+     build: ./authen-svc
+     ports:
+      - "3000:3000"
+
+   enter-data-svc:
+     build: ./enter-data-svc
+     ports:
+      - "5000:5000"
+     depends_on: 
+      - authen-svc
+      - mysqldb-svc
+
+   mysqldb-svc:
+     build: ./mysqldb-svc
+     ports:
+      - "3306:3306"
+
+   mongodb-svc:
+     build: ./mongodb-svc
+     ports:
+      - "27017:27017"
+
+   show-results-svc:
+     build: ./show-results-svc
+     ports:
+      - "4000:4000"
+     depends_on:
+      - authen-svc
+      - mongodb-svc
+
+   analytics-svc:
+     build: ./analytics-svc
+     ports:
+      - "6000:6000"
+     depends_on:
+      - mysqldb-svc
+      - mongodb-svc
