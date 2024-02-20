@@ -1,41 +1,57 @@
-version: '3.3'
+version: '3.8'
 
 services:
-   authen-svc: 
-     build: ./authen-svc
-     ports:
+  enter-data-svc:
+    build: ./enter-data-svc
+    ports:
       - "3000:3000"
-
-   enter-data-svc:
-     build: ./enter-data-svc
-     ports:
-      - "5000:5000"
-     depends_on: 
-      - authen-svc
+    environment:
+      MYSQL_HOST: mysqldb-svc
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_DATABASE: enterdata
+    depends_on:
       - mysqldb-svc
 
-   mysqldb-svc:
-     build: ./mysqldb-svc
-     ports:
+  mysqldb-svc:
+    image: mysql:5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: enterdata
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
       - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
 
-   mongodb-svc:
-     build: ./mongodb-svc
-     ports:
-      - "27017:27017"
+volumes:
+  mysql-data:
 
-   show-results-svc:
-     build: ./show-results-svc
-     ports:
-      - "4000:4000"
-     depends_on:
-      - authen-svc
-      - mongodb-svc
 
-   analytics-svc:
-     build: ./analytics-svc
-     ports:
-      - "6000:6000"
-     depends_on:
-      - mysqldb-svc
-      - mongodb-svc
+  # authen-svc: 
+  #   build: ./authen-svc
+  #   ports:
+  #     - "3000:3000"
+   
+   
+  # mongodb-svc:
+  #    build: ./mongodb-svc
+  #    ports:
+  #     - "27017:27017"
+
+  # show-results-svc:
+  #    build: ./show-results-svc
+  #    ports:
+  #     - "4000:4000"
+  #    depends_on:
+  #     - authen-svc
+  #     - mongodb-svc
+
+  # analytics-svc:
+  #    build: ./analytics-svc
+  #    ports:
+  #     - "6000:6000"
+  #    depends_on:
+  #     - mysqldb-svc
+  #     - mongodb-svc
