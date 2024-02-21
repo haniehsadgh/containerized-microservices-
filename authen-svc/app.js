@@ -1,9 +1,20 @@
+require('dotenv').config()
+
+
 const express = require('express');
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 const session = require('express-session');
 const flash = require('connect-flash');
 const bodyParser = require('body-parser');
+
+const mongoose = require('mongoose')
+const User = require('../mongodb-svc/userModel.js');
+
+mongoose.connect(process.env.DATABASE_URL)
+const db = mongoose.connection
+db.on('error', (error) => console.error(error))
+db.once('open', () => console.log('Connected to DB'))
 
 const app = express();
 
@@ -23,20 +34,31 @@ app.use(flash());
 // Use body-parser to parse form data
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// In-memory user database (replace this with a database in a real-world application)
-const users = [
-  { id: 1, username: 'user1', password: 'password1', reminders:[] },
-  { id: 2, username: 'user2', password: 'password2', reminders:[] }
-];
+// // In-memory user database (replace this with a database in a real-world application)
+// const users = [
+//   { id: 1, username: 'user1', password: 'password1', reminders:[] },
+//   { id: 2, username: 'user2', password: 'password2', reminders:[] }
+// ];
+
 
 // Passport local strategy
 passport.use(new LocalStrategy((username, password, done) => {
-  const user = users.find(u => u.username === username && u.password === password);
-  if (user) {
-    return done(null, user);
-  } else {
-    return done(null, false, { message: 'Incorrect username or password' });
-  }
+  User.findOne({ username: username, password: password })
+  .then(user => {
+      if (!user) {
+          return done(null, false, { message: 'Incorrect username or password' });
+      }
+      return done(null, user);
+  })
+  .catch(err => {
+      return done(err);
+  });
+//   const user = users.find(u => u.username === username && u.password === password);
+//   if (user) {
+//     return done(null, user);
+//   } else {
+//     return done(null, false, { message: 'Incorrect username or password' });
+//   }
 }));
 
 // Serialize and deserialize user
@@ -45,8 +67,9 @@ passport.serializeUser((user, done) => {
 });
 
 passport.deserializeUser((id, done) => {
-  const user = users.find(u => u.id === id);
-  done(null, user || false);
+    User.findById(id, (err, user) => {
+        done(err, user || false);
+      });
 });
 
 // Routes
@@ -75,9 +98,13 @@ app.post('/setReminder', (req, res) => {
     if (req.isAuthenticated()) {
       const user = req.user;
       const reminder = req.body.reminder;
-  
+    
+      if (!Array.isArray(user.reminders)) {
+        user.reminders = [];
+      }
       // Add the reminder to the user's array
       user.reminders.push(reminder);
+      user.save()
   
       res.redirect('/dashboard');
     } else {

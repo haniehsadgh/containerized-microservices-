@@ -6,6 +6,7 @@ RUN npm install passport-local
 RUN npm install express-session
 RUN npm install connect-flash
 RUN npm install body-parser
+RUN npm install mongoose dotenv
 COPY package*.json app.js ./
 RUN npm install
 EXPOSE 3000
