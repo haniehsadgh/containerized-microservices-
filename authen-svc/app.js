@@ -25,8 +25,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // In-memory user database (replace this with a database in a real-world application)
 const users = [
-  { id: 1, username: 'user1', password: 'password1', reminder:[] },
-  { id: 2, username: 'user2', password: 'password2', reminder:[] }
+  { id: 1, username: 'user1', password: 'password1', reminders:[] },
+  { id: 2, username: 'user2', password: 'password2', reminders:[] }
 ];
 
 // Passport local strategy
@@ -77,7 +77,7 @@ app.post('/setReminder', (req, res) => {
       const reminder = req.body.reminder;
   
       // Add the reminder to the user's array
-      user.reminder.push(reminder);
+      user.reminders.push(reminder);
   
       res.redirect('/dashboard');
     } else {
@@ -129,13 +129,13 @@ app.get('/dashboard', (req, res) => {
   // Check if the user is authenticated
   if (req.isAuthenticated()) {
     const user = req.user;
-    const reminder = user.reminder || 'No reminder set'; // Display 'No reminder set' if no reminder is available
+    const reminders = user.reminders || 'No reminder set'; // Display 'No reminder set' if no reminder is available
 
     res.send(`
       <h2>Welcome to the Dashboard, ${user.username}!</h2>
       <p>Your reminders:</p>
       <ul>
-        ${reminder.map(reminder => `<li>${reminder}</li>`).join('')}
+        ${reminders.map(reminder => `<li>${reminder}</li>`).join('')}
       </ul>
     `);
   } else {
